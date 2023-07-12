@@ -1,4 +1,3 @@
-// typeDefs.js
 const { gql } = require('apollo-server-express');
 
 const typeDefs = gql`
@@ -12,6 +11,7 @@ const typeDefs = gql`
   type Group {
     _id: ID!
     name: String!
+    password: String!
     users: [User]
     events: [Event]
   }
@@ -29,6 +29,11 @@ const typeDefs = gql`
     users: [User]
     groups: [Group]
     events: [Event]
+  }
+
+  type Mutation {
+    createGroup(name: String!, password: String!): Group
+    joinGroup(groupId: ID!, userId: ID!, password: String!): Group
   }
 `;
 
