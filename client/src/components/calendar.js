@@ -8,8 +8,11 @@ const MyCalendar = ({ currentGroup }) => {
     const [events, setEvents] = useState([]);
 
     useEffect(() => {
-        // Fetch events from your API based on the selected group
-        fetchEventsForGroup(currentGroup);
+      const fetchData = async () => {
+        await fetchEventsForGroup(currentGroup);
+      };
+      
+      fetchData();
     }, [currentGroup]);
 
     const fetchEventsForGroup = async (groupId) => {

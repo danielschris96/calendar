@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import logo from './logo.svg'; // replace this with the path to your logo
+import logo from '../assets/Keo-1.png'; // replace this with the path to your logo
 
 const Header = ({ currentGroupName, userGroups }) => {
     const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
