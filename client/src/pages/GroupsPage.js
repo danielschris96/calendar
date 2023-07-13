@@ -1,27 +1,37 @@
-
 import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@apollo/client';
+import { GET_GROUPS } from '../utils/queries';
+import { CREATE_GROUP, JOIN_GROUP } from '../utils/mutations';
 
 const GroupsPage = () => {
-  const [groups, setGroups] = useState([]);
+  const { loading, data } = useQuery(GET_GROUPS);
+  const [createGroupMutation] = useMutation(CREATE_GROUP);
+  const [joinGroupMutation] = useMutation(JOIN_GROUP);
+
   const [newGroupName, setNewGroupName] = useState("");
   const [groupNameToJoin, setGroupNameToJoin] = useState("");
 
-  useEffect(() => {
-    // TODO: fetch groups from your API and update the groups state
-    // setGroups(fetchedGroups);
-  }, []);
+  const groups = data ? data.groups : [];
 
   const createGroup = async () => {
-    // TODO: use your API to create a group with newGroupName
-    // after group is created, clear the new group name input and refresh the list of groups
-    setNewGroupName("");
+    try {
+      await createGroupMutation({ variables: { name: newGroupName } });
+      setNewGroupName("");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const joinGroup = async () => {
-    // TODO: use your API to add current user to group with name groupNameToJoin
-    // after user has joined group, clear the input and refresh the list of groups
-    setGroupNameToJoin("");
+    try {
+      await joinGroupMutation({ variables: { name: groupNameToJoin } });
+      setGroupNameToJoin("");
+    } catch (err) {
+      console.error(err);
+    }
   };
+
+  if (loading) return <p>Loading...</p>;
 
   return (
     <div>
