@@ -4,7 +4,7 @@ export const GET_USERS = gql`
   query GetUsers {
     users {
       _id
-      username
+      name
       email
       groups {
         _id
@@ -21,7 +21,7 @@ export const GET_GROUPS = gql`
       name
       users {
         _id
-        username
+        name
       }
       events {
         _id

@@ -23,7 +23,7 @@ const LoginPage = () => {
         <div>
           <h2>Sign Up</h2>
           <form>
-            <input type="text" placeholder="Username" />
+            <input type="text" placeholder="Name" />
             <input type="email" placeholder="Email" />
             <input type="password" placeholder="Password" />
             <button type="submit">Sign Up</button>
