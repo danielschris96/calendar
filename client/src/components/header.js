@@ -23,20 +23,17 @@ const Header = ({ currentGroupName, userGroups }) => {
             <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={toggleHamburger} />
             <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className="mr-auto">
-                <Dropdown>
+                <Dropdown onSelect={() => setIsHamburgerOpen(!isHamburgerOpen)}>
                   <Dropdown.Toggle variant="success" id="dropdown-basic">
-                    {currentGroupName}
+                      Dropdown Button
                   </Dropdown.Toggle>
 
-                  <Dropdown.Menu>
-                    {(userGroups || []).map((group, index) => (
-                      <Dropdown.Item as={Link} to={`/group/${group._id}`} key={index}>
-                        {group.name}
-                      </Dropdown.Item>
-                    ))}
+                  <Dropdown.Menu show={isHamburgerOpen}>
+                      <Dropdown.Item href="/personal-info">Personal Info</Dropdown.Item>
+                      <Dropdown.Item href="/create-join-group">Create/Join Group</Dropdown.Item>
+                      <Dropdown.Item href="/login">Logout</Dropdown.Item>
                   </Dropdown.Menu>
-                </Dropdown>
-                </Nav>
+                </Dropdown>                </Nav>
                 {isHamburgerOpen && (
                     <Nav>
                         <Nav.Link href="/personal-info">Personal Info</Nav.Link>

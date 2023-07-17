@@ -1,7 +1,9 @@
-const User = require('./models/User');
-const Group = require('./models/Group');
-const Event = require('./models/Event');
+const User = require('../models/User');
+const Group = require('../models/Group');
+const Event = require('../models/Event');
 const bcrypt = require('bcryptjs');
+const { UserInputError } = require('apollo-server-express');
+const { signToken } = require('../utils/auth');
 
 const resolvers = {
   Query: {
@@ -38,8 +40,32 @@ const resolvers = {
       await user.save();
 
       return group;
-    }
-  }
+    },
+    signup: async (_, { name, email, password }) => {
+      const user = await User.create({ name, email, password });
+      const token = signToken(user);
+  
+      return { token, user };
+    },
+  
+    login: async (_, { email, password }) => {
+      const user = await User.findOne({ email });
+  
+      if (!user) {
+        throw new UserInputError('Incorrect email.');
+      }
+  
+      const validPassword = await bcrypt.compare(password, user.password);
+  
+      if (!validPassword) {
+        throw new UserInputError('Incorrect password.');
+      }
+  
+      const token = signToken(user);
+  
+      return { token, user };
+    },
+  },
 };
 
 module.exports = resolvers;

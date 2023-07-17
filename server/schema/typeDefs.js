@@ -34,7 +34,15 @@ const typeDefs = gql`
   type Mutation {
     createGroup(name: String!, password: String!): Group
     joinGroup(groupId: ID!, userId: ID!, password: String!): Group
+    signup(name: String!, email: String!, password: String!): Auth
+    login(email: String!, password: String!): Auth
   }
+
+  type Auth {
+    token: String!
+    user: User
+  }
+  
 `;
 
 module.exports = typeDefs;
