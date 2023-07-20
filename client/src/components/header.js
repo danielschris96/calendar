@@ -17,7 +17,7 @@ const Header = ({ currentGroupName, userGroups }) => {
 
     return (
         <Navbar bg="light" expand="lg">
-            <Navbar.Brand href="#">
+            <Navbar.Brand href="/">
                 <img src={logo} alt="Logo" width="30" height="30" />
             </Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={toggleHamburger} />

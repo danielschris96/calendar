@@ -1,7 +1,6 @@
 import React from 'react';
-import Header from '../components/header';
+import 'react-big-calendar/lib/css/react-big-calendar.css'; // Don't forget to import the calendar CSS
 import Calendar from '../components/calendar';
-import Footer from '../components/footer';
 
 const HomePage = () => {
   return (

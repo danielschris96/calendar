@@ -23,13 +23,14 @@ const server = new ApolloServer({
 });
 
 const startServer = async () => {
-  // Apply Apollo GraphQL middleware and set it to use our express server as middleware
   await server.start();
-  server.applyMiddleware({ app });
 
   app.use(cors());
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
+
+  // Apply Apollo GraphQL middleware after setting up express middleware
+  server.applyMiddleware({ app });
 
   // Serve up static assets
   if (process.env.NODE_ENV === 'production') {
