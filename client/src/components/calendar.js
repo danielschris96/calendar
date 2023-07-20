@@ -15,14 +15,17 @@ const MyCalendar = ({ currentGroup }) => {
   const [eventCategory, setEventCategory] = useState(''); 
 
   useEffect(() => {
-    const fetchData = async () => {
-      await fetchEventsForGroup(currentGroup);
-    };
-    
-    fetchData();
+    if (currentGroup) {
+      fetchEventsForGroup(currentGroup._id);
+    }
   }, [currentGroup]);
 
   const fetchEventsForGroup = async (groupId) => {
+    if (!groupId) {
+      console.log("groupId is undefined!");
+      return;
+    }
+
     const response = await fetch("http://localhost:3001/graphql", {
       method: "POST",
       headers: {
@@ -46,7 +49,13 @@ const MyCalendar = ({ currentGroup }) => {
       }),
     });
   
-    const { data } = await response.json();
+    const { data, errors } = await response.json();
+    
+    if (errors) {
+      console.error(errors);
+      return;
+    }
+
     const groupEvents = data.group.events;
   
     const events = groupEvents.map(event => ({
@@ -59,6 +68,11 @@ const MyCalendar = ({ currentGroup }) => {
   };
 
   const createEvent = async (name, category) => {
+    if (!currentGroup) {
+      console.log("currentGroup is undefined!");
+      return;
+    }
+
     const response = await fetch("http://localhost:3001/graphql", {
       method: "POST",
       headers: {
@@ -67,8 +81,8 @@ const MyCalendar = ({ currentGroup }) => {
       },
       body: JSON.stringify({
         query: `
-          mutation CreateEvent($name: String!, $category: String!, $startTime: String!, $endTime: String!) {
-            createEvent(name: $name, category: $category, startTime: $startTime, endTime: $endTime) {
+          mutation CreateEvent($name: String!, $category: String!, $startTime: String!, $endTime: String!, $groupId: ID!) {
+            createEvent(name: $name, category: $category, startTime: $startTime, endTime: $endTime, groupId: $groupId) {
               _id
               name
               category
@@ -82,11 +96,18 @@ const MyCalendar = ({ currentGroup }) => {
           category,
           startTime: newEvent.start,
           endTime: newEvent.end,
+          groupId: currentGroup._id,
         },
       }),
     });
   
-    const { data } = await response.json();
+    const { data, errors } = await response.json();
+
+    if (errors) {
+      console.error(errors);
+      return;
+    }
+
     const event = data.createEvent;
   
     const createdEvent = { 
@@ -124,6 +145,7 @@ const MyCalendar = ({ currentGroup }) => {
           <input type="text" value={eventCategory} onChange={e => setEventCategory(e.target.value)} placeholder="Category" required />
           <button type="submit">Create Event</button>
         </form>
+        <button onClick={() => setNewEvent(null)}>Cancel</button>
       </Modal>
     </div>
   );

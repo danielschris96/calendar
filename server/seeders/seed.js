@@ -8,36 +8,44 @@ mongoose.connect(
     { useNewUrlParser: true, useUnifiedTopology: true },
 );
 
-const user = new User({
-    name: "User1",
-    email: "user1@example.com",
-    password: "password123",  // this will be hashed before save
-    groups: []
-});
+const seedData = async () => {
+    const user = new User({
+        name: "User1",
+        email: "user1@example.com",
+        password: "password123",  // this will be hashed before save
+        groups: []
+    });
 
-const group = new Group({
-    name: "Group1",
-    password: "group_password",  // this will be hashed before save
-    users: [],
-    events: []
-});
+    const savedUser = await user.save();
 
-const event = new Event({
-    name: "Event1",
-    category: "Category1",
-    startTime: new Date(),
-    endTime: new Date(),
-    group: group._id
-});
+    const group = new Group({
+        name: "Group1",
+        password: "group_password",  // this will be hashed before save
+        users: [savedUser._id],
+        events: []
+    });
 
-group.users.push(user._id);
-group.events.push(event._id);
+    const savedGroup = await group.save();
 
-user.groups.push(group._id);
+    const event = new Event({
+        name: "Event1",
+        category: "Category1",
+        startTime: new Date(),
+        endTime: new Date(),
+        group: savedGroup._id
+    });
 
-Promise.all([user.save(), group.save(), event.save()])
-    .then(() => {
-        console.log('Data has been seeded!');
-        mongoose.connection.close();
-    })
-    .catch((error) => console.log('Error seeding data: ' + error));
+    const savedEvent = await event.save();
+
+    savedUser.groups.push(savedGroup._id);
+    await savedUser.save();
+
+    savedGroup.users.push(savedUser._id);
+    savedGroup.events.push(savedEvent._id);
+    await savedGroup.save();
+
+    console.log('Data has been seeded!');
+    mongoose.connection.close();
+}
+
+seedData().catch((error) => console.log('Error seeding data: ' + error));

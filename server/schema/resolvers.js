@@ -65,6 +65,27 @@ const resolvers = {
   
       return { token, user };
     },
+    
+    createEvent: async (_, { name, category, startTime, endTime, groupId }) => {
+      const group = await Group.findById(groupId);
+      if (!group) throw new Error('Group not found');
+
+      const event = new Event({ name, category, startTime, endTime, group: groupId });
+      await event.save();
+
+      group.events.push(event._id);
+      await group.save();
+
+      return event;
+    },
+
+    updateEvent: async (_, { id, name, category, startTime, endTime }) => {
+      // Update event logic here...
+    },
+
+    deleteEvent: async (_, { id }) => {
+      // Delete event logic here...
+    },
   },
 };
 

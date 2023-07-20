@@ -36,6 +36,9 @@ const typeDefs = gql`
     joinGroup(groupId: ID!, userId: ID!, password: String!): Group
     signup(name: String!, email: String!, password: String!): Auth
     login(email: String!, password: String!): Auth
+    createEvent(name: String!, category: String!, startTime: String!, endTime: String!, groupId: ID!): Event
+    updateEvent(id: ID!, name: String, category: String, startTime: String, endTime: String): Event
+    deleteEvent(id: ID!): Event
   }
 
   type Auth {
