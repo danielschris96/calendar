@@ -49,3 +49,28 @@ export const GET_EVENTS = gql`
     }
   }
 `;
+
+export const GET_ALL_GROUPS = gql`
+  query GetAllGroups {
+    groups {
+      _id
+      name
+    }
+  }
+`;
+
+export const GET_GROUP_EVENTS = gql`
+  query GetGroupEvents($groupId: ID!) {
+    group(id: $groupId) {
+      _id
+      name
+      events {
+        _id
+        name
+        category
+        startTime
+        endTime
+      }
+    }
+  }
+`;

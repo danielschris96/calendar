@@ -3,140 +3,140 @@ import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Modal from 'react-modal'; 
+import EventDetails from './EventDetails';
+import { useQuery, useMutation, useLazyQuery } from '@apollo/client';
+import { GET_ALL_GROUPS, GET_GROUP_EVENTS } from '../utils/queries';
+import { CREATE_EVENT, UPDATE_EVENT, DELETE_EVENT } from '../utils/mutations';
 
 const localizer = momentLocalizer(moment);
 
 Modal.setAppElement('#root'); 
 
-const MyCalendar = ({ currentGroup }) => {
+const MyCalendar = () => {
+  const { data: groupData } = useQuery(GET_ALL_GROUPS);
+  const [getGroupEvents, { data: eventData }] = useLazyQuery(GET_GROUP_EVENTS);
+  const [createEventMutation] = useMutation(CREATE_EVENT);
+  const [updateEventMutation] = useMutation(UPDATE_EVENT);
+  const [deleteEventMutation] = useMutation(DELETE_EVENT);
+
   const [events, setEvents] = useState([]);
-  const [newEvent, setNewEvent] = useState(null); 
-  const [eventName, setEventName] = useState(''); 
-  const [eventCategory, setEventCategory] = useState(''); 
+  const [newEvent, setNewEvent] = useState(null);
+  const [eventName, setEventName] = useState('');
+  const [eventCategory, setEventCategory] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [editEvent, setEditEvent] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [groups, setGroups] = useState([]);
 
   useEffect(() => {
-    if (currentGroup) {
-      fetchEventsForGroup(currentGroup._id);
+    if (groupData && groupData.groups) {
+      setGroups(groupData.groups);
     }
-  }, [currentGroup]);
+  }, [groupData]);
 
-  const fetchEventsForGroup = async (groupId) => {
-    if (!groupId) {
-      console.log("groupId is undefined!");
-      return;
-    }
-
-    const response = await fetch("http://localhost:3001/graphql", {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        query: `
-          query GetGroupEvents {
-            group(id: "${groupId}") {
-              events {
-                _id
-                name
-                category
-                startTime
-                endTime
-              }
-            }
-          }
-        `,
-      }),
-    });
-  
-    const { data, errors } = await response.json();
-    
-    if (errors) {
-      console.error(errors);
-      return;
-    }
-
-    const groupEvents = data.group.events;
-  
-    const events = groupEvents.map(event => ({
-      ...event,
-      start: new Date(event.startTime),
-      end: new Date(event.endTime),
-    }));
-  
-    setEvents(events);
+  const handleGroupChange = (event) => {
+    const groupId = event.target.value;
+    setSelectedGroup(groupId);
+    getGroupEvents({ variables: { groupId } });
   };
 
-  const createEvent = async (name, category) => {
-    if (!currentGroup) {
-      console.log("currentGroup is undefined!");
-      return;
+  useEffect(() => {
+    if (eventData && eventData.group && eventData.group.events) {
+      const events = eventData.group.events.map(event => ({
+        ...event,
+        title: event.name,
+        allDay: false,
+        start: new Date(parseInt(event.startTime)),
+        end: new Date(parseInt(event.endTime)),
+      }));
+      setEvents(events);
     }
+  }, [eventData]);
 
-    const response = await fetch("http://localhost:3001/graphql", {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+  const handleCreateEvent = async (event) => {
+    event.preventDefault();
+    const { data } = await createEventMutation({
+      variables: {
+        name: eventName,
+        category: eventCategory,
+        groupId: selectedGroup,
+        startTime: newEvent.start.getTime().toString(),
+        endTime: newEvent.end.getTime().toString(),
       },
-      body: JSON.stringify({
-        query: `
-          mutation CreateEvent($name: String!, $category: String!, $startTime: String!, $endTime: String!, $groupId: ID!) {
-            createEvent(name: $name, category: $category, startTime: $startTime, endTime: $endTime, groupId: $groupId) {
-              _id
-              name
-              category
-              startTime
-              endTime
-            }
-          }
-        `,
-        variables: {
-          name,
-          category,
-          startTime: newEvent.start,
-          endTime: newEvent.end,
-          groupId: currentGroup._id,
-        },
-      }),
     });
-  
-    const { data, errors } = await response.json();
-
-    if (errors) {
-      console.error(errors);
-      return;
-    }
-
-    const event = data.createEvent;
-  
-    const createdEvent = { 
-      ...event,
-      start: new Date(event.startTime),
-      end: new Date(event.endTime),
+    const createdEvent = {
+      ...data.createEvent,
+      title: data.createEvent.name,
+      allDay: false,
+      start: new Date(parseInt(data.createEvent.startTime)),
+      end: new Date(parseInt(data.createEvent.endTime)),
     };
-  
     setEvents([...events, createdEvent]);
     setNewEvent(null);
-  };
-
-  const handleCreateEvent = (event) => {
-    event.preventDefault();
-    createEvent(eventName, eventCategory);
     setEventName(''); 
     setEventCategory(''); 
   };
 
+  const handleEditEvent = async (event) => {
+    const { data } = await updateEventMutation({
+      variables: {
+        id: event.id,
+        name: event.name,
+        category: event.category,
+        startTime: event.start.getTime().toString(),
+        endTime: event.end.getTime().toString(),
+      },
+    });
+    const updatedEvent = {
+      ...data.updateEvent,
+      title: data.updateEvent.name,
+      allDay: false,
+      start: new Date(parseInt(data.updateEvent.startTime)),
+      end: new Date(parseInt(data.updateEvent.endTime)),
+    };
+    setEvents(events.map(e => e._id === event._id ? updatedEvent : e));
+    setEditEvent(null);
+    setEditModalOpen(false);
+  };
+  
+  const handleDeleteEvent = async (event) => {
+    await deleteEventMutation({
+      variables: {
+        id: event._id,
+      },
+    });
+    setEvents(events.filter(e => e._id !== event._id));
+    setEditEvent(null);
+    setEditModalOpen(false);
+  };
+
   return (
     <div>
+      <select onChange={handleGroupChange}>
+        <option value="">Select a group</option>
+        {groups.map(group => (
+          <option key={group._id} value={group._id}>
+            {group.name}
+          </option>
+        ))}
+      </select>
       <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          selectable
-          onSelectSlot={({ start, end }) => setNewEvent({ start, end })}
-          style={{ height: '80vh' }}
+        localizer={localizer}
+        events={events}
+        startAccessor="start"
+        endAccessor="end"
+        titleAccessor="name"
+        selectable
+        onSelectSlot={({ start, end }) => setNewEvent({ start, end })}
+        onSelectEvent={event => setSelectedEvent(event)} // Select the event when clicked
+        style={{ height: '80vh' }}
+      />
+      <EventDetails
+        event={selectedEvent}
+        clearSelectedEvent={() => setSelectedEvent(null)}
+        editEvent={handleEditEvent}
+        deleteEvent={handleDeleteEvent}
       />
       <Modal isOpen={newEvent !== null}>
         <h2>Create Event</h2>

@@ -29,6 +29,7 @@ const typeDefs = gql`
     users: [User]
     groups: [Group]
     events: [Event]
+    group(id: ID!): Group
   }
 
   type Mutation {

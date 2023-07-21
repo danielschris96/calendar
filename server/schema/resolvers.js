@@ -16,6 +16,9 @@ const resolvers = {
     events: async () => {
       return await Event.find().populate('group');
     },
+    group: async (_, { id }) => {
+      return await Group.findById(id).populate('events');
+    },
   },
 
   Mutation: {
