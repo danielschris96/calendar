@@ -78,38 +78,40 @@ const MyCalendar = () => {
     setEventCategory(''); 
   };
 
-  const handleEditEvent = async (event) => {
-    const { data } = await updateEventMutation({
-      variables: {
-        id: event.id,
-        name: event.name,
-        category: event.category,
-        startTime: event.start.getTime().toString(),
-        endTime: event.end.getTime().toString(),
-      },
-    });
-    const updatedEvent = {
-      ...data.updateEvent,
-      title: data.updateEvent.name,
-      allDay: false,
-      start: new Date(parseInt(data.updateEvent.startTime)),
-      end: new Date(parseInt(data.updateEvent.endTime)),
-    };
-    setEvents(events.map(e => e._id === event._id ? updatedEvent : e));
-    setEditEvent(null);
-    setEditModalOpen(false);
+const handleEditEvent = async () => {
+  const { data } = await updateEventMutation({
+    variables: {
+      id: selectedEvent.id,
+      name: eventName,
+      category: eventCategory,
+      startTime: selectedEvent.start.getTime().toString(),
+      endTime: selectedEvent.end.getTime().toString(),
+    },
+  });
+  const updatedEvent = {
+    ...data.updateEvent,
+    title: data.updateEvent.name,
+    allDay: false,
+    start: new Date(parseInt(data.updateEvent.startTime)),
+    end: new Date(parseInt(data.updateEvent.endTime)),
   };
-  
-  const handleDeleteEvent = async (event) => {
-    await deleteEventMutation({
-      variables: {
-        id: event._id,
-      },
-    });
-    setEvents(events.filter(e => e._id !== event._id));
-    setEditEvent(null);
-    setEditModalOpen(false);
-  };
+  setEvents(events.map(e => e.id === selectedEvent.id ? updatedEvent : e));
+  setSelectedEvent(null);
+  setEventName('');
+  setEventCategory('');
+  setEditModalOpen(false);
+};
+
+const handleDeleteEvent = async () => {
+  await deleteEventMutation({
+    variables: {
+      id: selectedEvent.id,
+    },
+  });
+  setEvents(events.filter(e => e.id !== selectedEvent.id));
+  setSelectedEvent(null);
+  setEditModalOpen(false);
+};
 
   return (
     <div>

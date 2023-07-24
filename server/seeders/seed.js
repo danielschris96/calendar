@@ -2,9 +2,10 @@ const mongoose = require('mongoose');
 const User = require('../models/User');  // path to your user model
 const Group = require('../models/Group');  // path to your group model
 const Event = require('../models/Event');  // path to your event model
+require('dotenv').config();
 
 mongoose.connect(
-    process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/calendarDB",
+    process.env.DB_URI || "mongodb://127.0.0.1:27017/calendarDB",
     { useNewUrlParser: true, useUnifiedTopology: true },
 );
 

@@ -24,11 +24,15 @@ const UserSchema = new mongoose.Schema({
   ]
 });
 
-UserSchema.pre('save', function(next) {
+UserSchema.pre('save', async function(next) {
+  // Check if password is modified, if not skip hashing
   if (!this.isModified('password')) {
-    return next();
+      return next();
   }
-  this.password = bcrypt.hashSync(this.password, 10);
+  // Hash the password
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+
   next();
 });
 
