@@ -13,7 +13,7 @@ const seedData = async () => {
     const user = new User({
         name: "User1",
         email: "user1@example.com",
-        password: "password123",  // this will be hashed before save
+        password: "password123",  
         groups: []
     });
 
@@ -21,7 +21,7 @@ const seedData = async () => {
 
     const group = new Group({
         name: "Group1",
-        password: "group_password",  // this will be hashed before save
+        password: "group_password",  
         users: [savedUser._id],
         events: []
     });

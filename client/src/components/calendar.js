@@ -45,6 +45,7 @@ const MyCalendar = () => {
     if (eventData && eventData.group && eventData.group.events) {
       const events = eventData.group.events.map(event => ({
         ...event,
+        _id: event._id, // this is needed as your backend might be using _id as key
         title: event.name,
         allDay: false,
         start: new Date(parseInt(event.startTime)),
@@ -78,40 +79,40 @@ const MyCalendar = () => {
     setEventCategory(''); 
   };
 
-const handleEditEvent = async () => {
-  const { data } = await updateEventMutation({
-    variables: {
-      id: selectedEvent.id,
-      name: eventName,
-      category: eventCategory,
-      startTime: selectedEvent.start.getTime().toString(),
-      endTime: selectedEvent.end.getTime().toString(),
-    },
-  });
-  const updatedEvent = {
-    ...data.updateEvent,
-    title: data.updateEvent.name,
-    allDay: false,
-    start: new Date(parseInt(data.updateEvent.startTime)),
-    end: new Date(parseInt(data.updateEvent.endTime)),
+  const handleEditEvent = async () => {
+    const { data } = await updateEventMutation({
+      variables: {
+        id: selectedEvent._id,
+        name: eventName,
+        category: eventCategory,
+        startTime: selectedEvent.start.getTime().toString(),
+        endTime: selectedEvent.end.getTime().toString(),
+      },
+    });
+    const updatedEvent = {
+      ...data.updateEvent,
+      title: data.updateEvent.name,
+      allDay: false,
+      start: new Date(parseInt(data.updateEvent.startTime)),
+      end: new Date(parseInt(data.updateEvent.endTime)),
+    };
+    setEvents(events.map(e => e._id === selectedEvent._id ? updatedEvent : e));
+    setSelectedEvent(null);
+    setEventName('');
+    setEventCategory('');
+    setEditModalOpen(false);
   };
-  setEvents(events.map(e => e.id === selectedEvent.id ? updatedEvent : e));
-  setSelectedEvent(null);
-  setEventName('');
-  setEventCategory('');
-  setEditModalOpen(false);
-};
 
-const handleDeleteEvent = async () => {
-  await deleteEventMutation({
-    variables: {
-      id: selectedEvent.id,
-    },
-  });
-  setEvents(events.filter(e => e.id !== selectedEvent.id));
-  setSelectedEvent(null);
-  setEditModalOpen(false);
-};
+  const handleDeleteEvent = async () => {
+    await deleteEventMutation({
+      variables: {
+        id: selectedEvent._id,
+      },
+    });
+    setEvents(events.filter(e => e._id !== selectedEvent._id));
+    setSelectedEvent(null);
+    setEditModalOpen(false);
+  };
 
   return (
     <div>

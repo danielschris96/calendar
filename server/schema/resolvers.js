@@ -83,11 +83,30 @@ const resolvers = {
     },
 
     updateEvent: async (_, { id, name, category, startTime, endTime }) => {
-      // Update event logic here...
+      // Find event by id and update it
+      const event = await Event.findByIdAndUpdate(
+        id,
+        { name, category, startTime, endTime },
+        { new: true } // This option asks mongoose to return the updated version of the document instead of the pre-updated one.
+      );
+
+      if (!event) throw new Error('Event not found');
+      return event;
     },
 
     deleteEvent: async (_, { id }) => {
-      // Delete event logic here...
+      // Find event by id and delete it
+      const event = await Event.findByIdAndDelete(id);
+
+      if (!event) throw new Error('Event not found');
+      
+      // Also need to remove the event from the group's events
+      await Group.updateOne(
+        { events: id }, 
+        { $pull: { events: id } }
+      );
+
+      return event;
     },
   },
 };
