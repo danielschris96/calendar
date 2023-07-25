@@ -1,15 +1,22 @@
 import React from 'react';
 
-const EventDetails = ({ event, clearSelectedEvent, editEvent, deleteEvent }) => {
-  return event && (
+const EventDetails = ({ event, clearSelectedEvent, handleEditEvent, handleDeleteEvent, setEditModalOpen }) => {
+  return (
     <div>
-      <h2>{event.name}</h2>
-      <p>{event.category}</p>
-      <p>Starts: {event.start.toString()}</p>
-      <p>Ends: {event.end.toString()}</p>
+      <h3>{event ? event.title : ''}</h3>
+      <p>{event ? event.category : ''}</p>
+      <p>{event ? new Date(event.start).toLocaleString() : ''}</p>
+      <p>{event ? new Date(event.end).toLocaleString() : ''}</p>
+      <button 
+        onClick={() => {
+          handleEditEvent();
+          setEditModalOpen(true);
+        }}
+      >
+        Edit
+      </button>
+      <button onClick={handleDeleteEvent}>Delete</button>
       <button onClick={clearSelectedEvent}>Close</button>
-      <button onClick={() => editEvent(event)}>Edit</button>
-      <button onClick={() => deleteEvent(event._id)}>Delete</button>
     </div>
   );
 };
