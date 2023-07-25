@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_GROUPS } from '../utils/queries';
 import { CREATE_GROUP, JOIN_GROUP } from '../utils/mutations';
+import AuthService from '../utils/auth';
 
 const GroupsPage = () => {
   const { loading, data } = useQuery(GET_GROUPS);
@@ -17,27 +18,34 @@ const GroupsPage = () => {
 
   const createGroup = async () => {
     try {
-      await createGroupMutation({
+      const { data } = await createGroupMutation({
         variables: {
           name: newGroupName,
           password: newGroupPassword,
-        }
+        },
+        refetchQueries: [{ query: GET_GROUPS }],
       });
       setNewGroupName("");
       setNewGroupPassword("");
+      const groupId = data.createGroup._id;
+      joinGroup(groupId, groupPasswordToJoin);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const joinGroup = async () => {
+  const joinGroup = async (groupId, password) => {
     try {
+      // Get the user ID from the decoded token
+      const user = AuthService.getProfile();
+      const userId = user._id;
+
       await joinGroupMutation({
         variables: {
-          groupId: groupNameToJoin,
-          userId: 'user_id_here', // Replace 'user_id_here' with the actual user ID if available
-          password: groupPasswordToJoin,
-        }
+          groupId: groupId,
+          userId: userId,
+          password: password,
+        },
       });
       setGroupNameToJoin("");
       setGroupPasswordToJoin("");
@@ -79,7 +87,7 @@ const GroupsPage = () => {
         value={groupPasswordToJoin}
         onChange={e => setGroupPasswordToJoin(e.target.value)}
       />
-      <button onClick={joinGroup}>Join Group</button>
+      <button onClick={() => joinGroup(groupNameToJoin, groupPasswordToJoin)}>Join Group</button>
 
       <h3>Existing Groups</h3>
       <ul>

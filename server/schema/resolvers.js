@@ -10,8 +10,13 @@ const resolvers = {
     users: async () => {
       return await User.find().populate('groups');
     },
-    groups: async () => {
-      return await Group.find().populate('users').populate('events');
+    groups: async (_, __, { user }) => {
+      // Check if user is authenticated
+      if (!user) {
+        throw new Error('You are not authorized to view this information.');
+      }
+      // Only return groups the user is associated with
+      return await Group.find({ users: user._id }).populate('users').populate('events');
     },
     events: async () => {
       return await Event.find().populate('group');
@@ -22,22 +27,39 @@ const resolvers = {
   },
 
   Mutation: {
-    createGroup: async (_, { name, password }) => {
-      const group = new Group({ name, password });
+    createGroup: async (_, { name, password }, { user }) => {
+      // Check if user is authenticated
+      if (!user) {
+        throw new Error('You are not authorized to create a group.');
+      }
+
+      const group = new Group({ name, password, users: [user._id] });
       await group.save();
+
+      // Add the group to the user's groups list
+      user.groups.push(group._id);
+      await user.save();
+
       return group;
     },
     joinGroup: async (_, { groupId, userId, password }) => {
       const group = await Group.findById(groupId);
+
+      if (!group) {
+        throw new Error('Group not found.');
+      }
+
       const validPassword = await bcrypt.compare(password, group.password);
 
       if (!validPassword) {
-        throw new Error('Invalid password');
+        throw new Error('Invalid password.');
       }
 
+      // Add the user to the group's users list
       group.users.push(userId);
       await group.save();
 
+      // Add the group to the user's groups list
       const user = await User.findById(userId);
       user.groups.push(groupId);
       await user.save();

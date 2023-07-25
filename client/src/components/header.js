@@ -29,15 +29,15 @@ const Header = ({ currentGroupName, userGroups }) => {
                   </Dropdown.Toggle>
 
                   <Dropdown.Menu show={isHamburgerOpen}>
-                      <Dropdown.Item href="/personal-info">Personal Info</Dropdown.Item>
+                      <Dropdown.Item href="/info">Personal Info</Dropdown.Item>
                       <Dropdown.Item href="/groups">Create/Join Group</Dropdown.Item>
                       <Dropdown.Item href="/login">Logout</Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>                </Nav>
                 {isHamburgerOpen && (
                     <Nav>
-                        <Nav.Link href="/personal-info">Personal Info</Nav.Link>
-                        <Nav.Link href="/create-join-group">Create/Join Group</Nav.Link>
+                        <Nav.Link href="/info">Personal Info</Nav.Link>
+                        <Nav.Link href="/groups">Create/Join Group</Nav.Link>
                         <Nav.Link href="/login">Logout</Nav.Link>
                     </Nav>
                 )}
