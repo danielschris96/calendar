@@ -45,7 +45,7 @@ const MyCalendar = () => {
     if (eventData && eventData.group && eventData.group.events) {
       const events = eventData.group.events.map(event => ({
         ...event,
-        _id: event._id, // this is needed as your backend might be using _id as key
+        _id: event._id,
         title: event.name,
         allDay: false,
         start: new Date(parseInt(event.startTime)),
@@ -75,19 +75,31 @@ const MyCalendar = () => {
     };
     setEvents([...events, createdEvent]);
     setNewEvent(null);
-    setEventName(''); 
-    setEventCategory(''); 
+    setEventName('');
+    setEventCategory('');
+    setEditModalOpen(false); // Close the create event modal after submission
   };
 
-  const handleEditEvent = async (event) => {
+  const handleEditEvent = (event) => {
+    setEditEvent(event);
+    setEventName(event.title);
+    setEventCategory(event.category);
+    setNewEvent({
+      start: new Date(event.start),
+      end: new Date(event.end)
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleEditEventSubmit = async (event) => {
     event.preventDefault();
     const { data } = await updateEventMutation({
       variables: {
-        id: selectedEvent._id,
+        id: editEvent._id,
         name: eventName,
         category: eventCategory,
-        startTime: selectedEvent.start.getTime().toString(),
-        endTime: selectedEvent.end.getTime().toString(),
+        startTime: newEvent.start.getTime().toString(),
+        endTime: newEvent.end.getTime().toString(),
       },
     });
     const updatedEvent = {
@@ -97,11 +109,12 @@ const MyCalendar = () => {
       start: new Date(parseInt(data.updateEvent.startTime)),
       end: new Date(parseInt(data.updateEvent.endTime)),
     };
-    setEvents(events.map(e => e._id === selectedEvent._id ? updatedEvent : e));
+    setEvents(events.map(e => e._id === editEvent._id ? updatedEvent : e));
     setSelectedEvent(null);
     setEventName('');
     setEventCategory('');
-    setEditModalOpen(false); // Corrected the function name
+    setNewEvent(null);
+    setEditModalOpen(false);
   };
 
   const handleDeleteEvent = async () => {
@@ -112,7 +125,7 @@ const MyCalendar = () => {
     });
     setEvents(events.filter(e => e._id !== selectedEvent._id));
     setSelectedEvent(null);
-    setEditModalOpen(false); // Corrected the function name
+    setEditModalOpen(false);
   };
 
   return (
@@ -139,32 +152,73 @@ const MyCalendar = () => {
       <EventDetails
         event={selectedEvent}
         clearSelectedEvent={() => setSelectedEvent(null)}
-        handleEditEvent={() => {
-          setEventName(selectedEvent.title);
-          setEventCategory(selectedEvent.category);
-          setEditModalOpen(true);
-        }}
+        handleEditEvent={handleEditEvent}
         handleDeleteEvent={handleDeleteEvent}
-        setEditModalOpen={setEditModalOpen}
       />
-      <Modal isOpen={newEvent !== null}>
+      <Modal isOpen={newEvent !== null} onRequestClose={() => setNewEvent(null)}>
         <h2>Create Event</h2>
         <form onSubmit={handleCreateEvent}>
           <input type="text" value={eventName} onChange={e => setEventName(e.target.value)} placeholder="Event Name" required />
           <input type="text" value={eventCategory} onChange={e => setEventCategory(e.target.value)} placeholder="Category" required />
+          <div>
+            <label>Start Date:</label>
+            <input
+              type="datetime-local"
+              value={newEvent?.start?.toISOString().slice(0, 16) || ''}
+              onChange={(e) =>
+                setNewEvent((prev) => ({ ...prev, start: new Date(e.target.value) }))
+              }
+              required
+            />
+          </div>
+          <div>
+            <label>End Date:</label>
+            <input
+              type="datetime-local"
+              value={newEvent?.end?.toISOString().slice(0, 16) || ''}
+              onChange={(e) =>
+                setNewEvent((prev) => ({ ...prev, end: new Date(e.target.value) }))
+              }
+              required
+            />
+          </div>
           <button type="submit">Create Event</button>
+          <button onClick={() => setNewEvent(null)}>Cancel</button>
         </form>
-        <button onClick={() => setNewEvent(null)}>Cancel</button>
       </Modal>
-      <Modal isOpen={isEditModalOpen}>
-        <h2>Edit Event</h2>
-        <form onSubmit={handleEditEvent}>
-          <input type="text" value={eventName} onChange={e => setEventName(e.target.value)} placeholder="Event Name" required />
-          <input type="text" value={eventCategory} onChange={e => setEventCategory(e.target.value)} placeholder="Category" required />
-          <button type="submit">Update Event</button>
-        </form>
-        <button onClick={() => setEditModalOpen(false)}>Cancel</button>
-      </Modal>
+      {isEditModalOpen && (
+        <Modal isOpen={isEditModalOpen} onRequestClose={() => setEditModalOpen(false)}>
+          <h2>Edit Event</h2>
+          <form onSubmit={handleEditEventSubmit}>
+            <input type="text" value={eventName} onChange={e => setEventName(e.target.value)} placeholder="Event Name" required />
+            <input type="text" value={eventCategory} onChange={e => setEventCategory(e.target.value)} placeholder="Category" required />
+            <div>
+              <label>Start Date:</label>
+              <input
+                type="datetime-local"
+                value={newEvent?.start?.toISOString().slice(0, 16) || ''}
+                onChange={(e) =>
+                  setNewEvent((prev) => ({ ...prev, start: new Date(e.target.value) }))
+                }
+                required
+              />
+            </div>
+            <div>
+              <label>End Date:</label>
+              <input
+                type="datetime-local"
+                value={newEvent?.end?.toISOString().slice(0, 16) || ''}
+                onChange={(e) =>
+                  setNewEvent((prev) => ({ ...prev, end: new Date(e.target.value) }))
+                }
+                required
+              />
+            </div>
+            <button type="submit">Update Event</button>
+            <button onClick={() => setEditModalOpen(false)}>Cancel</button>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 };
