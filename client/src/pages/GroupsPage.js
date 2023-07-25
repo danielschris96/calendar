@@ -9,14 +9,22 @@ const GroupsPage = () => {
   const [joinGroupMutation] = useMutation(JOIN_GROUP);
 
   const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupPassword, setNewGroupPassword] = useState("");
   const [groupNameToJoin, setGroupNameToJoin] = useState("");
+  const [groupPasswordToJoin, setGroupPasswordToJoin] = useState("");
 
   const groups = data ? data.groups : [];
 
   const createGroup = async () => {
     try {
-      await createGroupMutation({ variables: { name: newGroupName } });
+      await createGroupMutation({
+        variables: {
+          name: newGroupName,
+          password: newGroupPassword,
+        }
+      });
       setNewGroupName("");
+      setNewGroupPassword("");
     } catch (err) {
       console.error(err);
     }
@@ -24,8 +32,15 @@ const GroupsPage = () => {
 
   const joinGroup = async () => {
     try {
-      await joinGroupMutation({ variables: { name: groupNameToJoin } });
+      await joinGroupMutation({
+        variables: {
+          groupId: groupNameToJoin,
+          userId: 'user_id_here', // Replace 'user_id_here' with the actual user ID if available
+          password: groupPasswordToJoin,
+        }
+      });
       setGroupNameToJoin("");
+      setGroupPasswordToJoin("");
     } catch (err) {
       console.error(err);
     }
@@ -43,14 +58,26 @@ const GroupsPage = () => {
         value={newGroupName}
         onChange={e => setNewGroupName(e.target.value)}
       />
+      <input 
+        type="password" 
+        placeholder="Group password" 
+        value={newGroupPassword}
+        onChange={e => setNewGroupPassword(e.target.value)}
+      />
       <button onClick={createGroup}>Create Group</button>
-      
+
       <h3>Join an existing group</h3>
       <input 
         type="text" 
         placeholder="Group name to join" 
         value={groupNameToJoin}
         onChange={e => setGroupNameToJoin(e.target.value)}
+      />
+      <input 
+        type="password" 
+        placeholder="Group password to join" 
+        value={groupPasswordToJoin}
+        onChange={e => setGroupPasswordToJoin(e.target.value)}
       />
       <button onClick={joinGroup}>Join Group</button>
 

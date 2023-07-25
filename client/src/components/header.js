@@ -30,7 +30,7 @@ const Header = ({ currentGroupName, userGroups }) => {
 
                   <Dropdown.Menu show={isHamburgerOpen}>
                       <Dropdown.Item href="/personal-info">Personal Info</Dropdown.Item>
-                      <Dropdown.Item href="/create-join-group">Create/Join Group</Dropdown.Item>
+                      <Dropdown.Item href="/groups">Create/Join Group</Dropdown.Item>
                       <Dropdown.Item href="/login">Logout</Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>                </Nav>
