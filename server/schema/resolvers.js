@@ -37,35 +37,43 @@ const resolvers = {
       await group.save();
 
       // Add the group to the user's groups list
-      user.groups.push(group._id);
+      if (!user.groups) {
+        user.groups = [group._id];
+      } else {
+        user.groups.push(group._id);
+      }
       await user.save();
 
       return group;
     },
-    joinGroup: async (_, { groupId, userId, password }) => {
-      const group = await Group.findById(groupId);
-
+    joinGroup: async (_, { groupName, password }, { user }) => {
+      if (!user) {
+        throw new Error('You are not authorized to join a group.');
+      }
+  
+      const group = await Group.findOne({ name: groupName });
+  
       if (!group) {
         throw new Error('Group not found.');
       }
-
+  
       const validPassword = await bcrypt.compare(password, group.password);
-
+  
       if (!validPassword) {
         throw new Error('Invalid password.');
       }
-
+  
       // Add the user to the group's users list
-      group.users.push(userId);
+      group.users.push(user._id);
       await group.save();
-
+  
       // Add the group to the user's groups list
-      const user = await User.findById(userId);
-      user.groups.push(groupId);
+      user.groups.push(group._id);
       await user.save();
-
+  
       return group;
     },
+    
     signup: async (_, { name, email, password }) => {
       const user = await User.create({ name, email, password });
       const token = signToken(user);

@@ -2,25 +2,39 @@ import decode from 'jwt-decode';
 
 class AuthService {
   getProfile() {
-    return decode(this.getToken());
+    const token = this.getToken();
+    console.log('Token:', token);
+
+    if (token) {
+      try {
+        const decoded = decode(token);
+        console.log('Decoded User:', decoded);
+        return decoded;
+      } catch (err) {
+        console.error('Error decoding token:', err);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  getUserId() {
+    const token = this.getToken();
+    if (token) {
+      const decodedToken = decode(token);
+      return decodedToken?.data?._id || null;
+    }
+    return null;
   }
 
   loggedIn() {
     const token = this.getToken();
-    // If there is a token and it's not expired, return `true`
-    return token && !this.isTokenExpired(token) ? true : false;
+    return token && !this.isTokenExpired(token);
   }
 
   isTokenExpired(token) {
-    // Decode the token to get its expiration time that was set by the server
     const decoded = decode(token);
-    // If the expiration time is less than the current time (in seconds), the token is expired and we return `true`
-    if (decoded.exp < Date.now() / 1000) {
-      localStorage.removeItem('id_token');
-      return true;
-    }
-    // If token hasn't passed its expiration time, return `false`
-    return false;
+    return decoded.exp < Date.now() / 1000;
   }
 
   getToken() {

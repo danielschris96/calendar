@@ -5,13 +5,17 @@ export const CREATE_GROUP = gql`
     createGroup(name: $name, password: $password) {
       _id
       name
+      users {
+        _id
+        name
+      }
     }
   }
 `;
 
 export const JOIN_GROUP = gql`
-  mutation JoinGroup($groupId: ID!, $userId: ID!, $password: String!) {
-    joinGroup(groupId: $groupId, userId: $userId, password: $password) {
+  mutation JoinGroup($groupName: String!, $password: String!) {
+    joinGroup(groupName: $groupName, password: $password) {
       _id
       name
     }

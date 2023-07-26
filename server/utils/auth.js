@@ -1,11 +1,10 @@
 const jwt = require('jsonwebtoken');
-
+const User = require('../models/User'); // Import the User model
 // set token secret and expiration date
 const secret = process.env.TOKEN_SECRET || 'mysecretsshhhhh';
 const expiration = process.env.TOKEN_EXPIRATION || '800h';
 module.exports = {
-  // function for our authenticated routes
-  authMiddleware: function ({ req }) {
+  authMiddleware: async function ({ req }) {
     let token = req.body.token || req.query.token || req.headers.authorization;
 
     if (req.headers.authorization) {
@@ -18,7 +17,11 @@ module.exports = {
 
     try {
       const { data } = jwt.verify(token, secret, { maxAge: expiration });
-      req.user = data;
+
+      // Find the user by the decoded _id
+      const user = await User.findById(data._id);
+
+      req.user = user; // Set the user object in the request context
     } catch {
       console.log('Invalid token');
     }
