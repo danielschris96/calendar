@@ -32,13 +32,21 @@ const MyCalendar = () => {
   useEffect(() => {
     if (groupData && groupData.groups) {
       setGroups(groupData.groups);
+      const lastSelectedGroup = localStorage.getItem('lastSelectedGroup');
+      if (lastSelectedGroup) {
+        setSelectedGroup(lastSelectedGroup);
+        getGroupEvents({ variables: { groupId: lastSelectedGroup } });
+      }
     }
-  }, [groupData]);
+  }, [groupData, getGroupEvents]);
 
   const handleGroupChange = (event) => {
     const groupId = event.target.value;
     setSelectedGroup(groupId);
     getGroupEvents({ variables: { groupId } });
+  
+    // Save to localStorage
+    localStorage.setItem('lastSelectedGroup', groupId);
   };
 
   useEffect(() => {
