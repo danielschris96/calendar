@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, gql } from '@apollo/client';
 import { GET_GROUPS } from '../utils/queries';
-import { CREATE_GROUP, JOIN_GROUP } from '../utils/mutations';
+import { CREATE_GROUP, JOIN_GROUP, DELETE_GROUP } from '../utils/mutations';
 import AuthService from '../utils/auth';
+
 
 const GroupsPage = () => {
   const [userId, setUserId] = useState(null);
@@ -15,6 +16,7 @@ const GroupsPage = () => {
   const { loading, data } = useQuery(GET_GROUPS);
   const [createGroupMutation] = useMutation(CREATE_GROUP);
   const [joinGroupMutation] = useMutation(JOIN_GROUP);
+  const [deleteGroupMutation] = useMutation(DELETE_GROUP);
 
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupPassword, setNewGroupPassword] = useState('');
@@ -26,6 +28,17 @@ const GroupsPage = () => {
   }, [userId]);
 
   const groups = data ? data.groups : [];
+
+  const deleteGroup = async (groupId) => {  // Add this function
+    try {
+      await deleteGroupMutation({
+        variables: { id: groupId },
+        refetchQueries: [{ query: GET_GROUPS }],
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const createGroup = async () => {
     try {
@@ -112,10 +125,13 @@ const GroupsPage = () => {
 
       <h3>Existing Groups</h3>
       <ul>
-        {groups.map((group) => (
-          <li key={group._id}>{group.name}</li>
-        ))}
-      </ul>
+      {groups.map((group) => (
+        <li key={group._id}>
+          {group.name} 
+          <button onClick={() => deleteGroup(group._id)}>Delete Group</button>
+        </li>
+      ))}
+    </ul>
     </div>
   );
 };

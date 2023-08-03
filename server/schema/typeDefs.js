@@ -33,6 +33,7 @@ const typeDefs = gql`
   }
 
   type Mutation {
+    deleteGroup(id: ID!): Group
     createGroup(name: String!, password: String!): Group
     joinGroup(groupName: String!, password: String!): Group
     signup(name: String!, email: String!, password: String!): Auth

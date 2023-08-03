@@ -73,6 +73,34 @@ const resolvers = {
   
       return group;
     },
+
+    deleteGroup: async (_, { id }, { user }) => {
+      if (!user) {
+        throw new Error('You are not authorized to delete a group.');
+      }
+
+      const group = await Group.findById(id);
+
+      if (!group) {
+        throw new Error('Group not found.');
+      }
+
+      // Ensure the user is part of the group they are trying to delete
+      if (!group.users.includes(user._id)) {
+        throw new Error('You are not a member of this group.');
+      }
+
+      // Remove the group from each user's groups list
+      await User.updateMany(
+        { groups: group._id }, 
+        { $pull: { groups: group._id } }
+      );
+
+      // Finally delete the group
+      await Group.findByIdAndDelete(id);
+
+      return group;
+    },
     
     signup: async (_, { name, email, password }) => {
       const user = await User.create({ name, email, password });

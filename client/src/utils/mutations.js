@@ -22,6 +22,14 @@ export const JOIN_GROUP = gql`
   }
 `;
 
+export const DELETE_GROUP = gql`
+  mutation DeleteGroup($id: ID!) {
+    deleteGroup(id: $id) {
+      _id
+    }
+  }
+`;
+
 export const CREATE_USER = gql`
   mutation CreateUser($name: String!, $email: String!, $password: String!) {
     createUser(name: $name, email: $email, password: $password) {
